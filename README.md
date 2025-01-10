@@ -11,8 +11,8 @@ priori information on the PSF, namely, its positivity and estimates of its ensem
 
 ## References
 <a id="1">[1]</a> 
-Jean-Marc Conan, Laurent M. Mugnier, Thierry Fusco, Vincent Michau, and Gerard Rousse
-Myopic deconvolution of adaptive optics images by use of object and point-spread function power spectra
-APPLIED OPTICS / Vol. 37, No. 21 / 20 July 1998
+Jean-Marc Conan, Laurent M. Mugnier, Thierry Fusco, Vincent Michau, and Gerard Rousse | 
+Myopic deconvolution of adaptive optics images by use of object and point-spread function power spectra | 
+APPLIED OPTICS / Vol. 37, No. 21 / 20 July 1998 | 
 © 1998 Optical Society of America
 
