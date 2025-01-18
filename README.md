@@ -1,7 +1,9 @@
 # IO-PTI
+
 Myopic deconvolution of retina images acquired by adaptative optics through bayesian estimation.
 
 ## Context
+
 When an optical system is designed, a theoretical Point Spread Function (PSF) is associated with it. The system built according to this design is calibrated, and the experimental PSF slightly differs from the theoretical one (usually slightly degraded due to the imperfections of the manufacturing processes). For classic usecases of optical systems, like classic photography the in-use PSF will be the experimental one with a good approximation (modulo the aging of the system). However for specific usescases involving middles with variating characteristics (such as optical indices), the PSF is modified with each specific middle. One way of correcting this change of the PSF, due to the changes in the measuring environment, it to introduce adaptative optics (AO) in the design of the optical system. AO will characterize the perturbation (air temperature, winds for astronomical observation involving light propagation in the atmosphere, or of the eye lens and eyeball liquid for retina scanning) and reconstruct the wavefront so that the usecase PSF is partly corrected from this.
 
 This AO design produces better resolved images that can be then improved with digital processing, usually involving deconvolution of the acquired image by the usecase PSF of the system. For deconvolution of images acquired in classic (static) middles, the experimental PSF is used, however here, the estimate of the PSF is to be found to perform such filtering. This situation is called blind deconvolution (or myopic deconvolution since the image still contain information about the PSF). For example, the scheme used in [[1]](#1) uses some available a priori information on the PSF, namely, its positivity and estimates of its ensemble mean and PSD.
@@ -33,7 +35,6 @@ $$
 
 In general, the calculation of the MMSE estimator is not tractable unless the estimator is assumed to be linear. The minimization of Eq. (5) under this assumption leads to the Wiener filter. ${ }^{23,24}$ It is important to note that in the case of joint Gaussian statistics for the noise and the object, the Wiener, the MMSE, and the MAP estimators are identical. ${ }^{23}$
 
-
 $\begin{aligned} p(\mathbf{o} \mid \mathbf{i}) & \propto p(\mathbf{i} \mid \mathbf{o}) p(\mathbf{o}) \\ & \propto \exp \left[-1 / 2(\mathbf{i}-H \mathbf{o})^t R_n^{-1}(\mathbf{i}-H \mathbf{o})\right] \\ & \times \exp \left[-1 / 2\left(\mathbf{o}-\mathbf{o}_{\mathbf{m}}\right)^t R_o^{-1}\left(\mathbf{o}-\mathbf{o}_{\mathbf{m}}\right)\right],\end{aligned}$
 
 Choosing the regularization function consist in finding the right model for the regularization parameter, ie the PSD of the *a priori* distribution (of the object here). The maximization criterion is composed of two terms classicaly, the likelihood terms, usually a least square term, and the regularization function.
@@ -55,21 +56,15 @@ J(\mathbf{o}, \mathbf{h})= & \sum_f\left[\frac{|\tilde{\mathbf{h}}(f) \tilde{\ma
 $$
 where $\operatorname{PSD}_h$ is the spatial PSD of the PSF, and $\tilde{\mathbf{h}}_{\mathrm{m}}$ is the ensemble mean OTF (Fourier transform of the ensemble mean PSF). Again, when the noise is not Gaussian (which is the case in astronomical imaging), this estimator is not a true MAP estimator but a myopic RLS estimator, unless the first term of the criterion is replaced with the $\log$ probability of the noise.
 
-
 The last term (regularization on the PSF) cannot be ignored, otherwise the myopic deconvolution usually leads to the trivial solution: a Dirac function for the PSF and an object equal to the image. $\mathrm{PSD}_h$ is expressed simply as a function of the first two moments of the OTF:
 $$
 \operatorname{PSD}_h(f)=E\left[\left|\tilde{\mathbf{h}}(f)-\tilde{\mathbf{h}}_{\mathrm{m}}(f)\right|^2\right]=E\left[|\tilde{\mathbf{h}}(f)|^2\right]-\left|\tilde{\mathbf{h}}_{\mathrm{m}}(f)\right|^2
 $$
 
-
-
 The restoration quality can be quantitatively evaluated by the calculation of a distance to the true object $\mathbf{o}$, defined in [[2]] as :
 $$ d(\hat{\mathbf{o}}, \mathbf{o})=\left[\frac{1}{N_{\text {pix }}} \sum_{\text {pixels }}|\hat{\mathbf{o}}(r)-\mathbf{o}(r)|^2\right]^{1 / 2}(photons/pixel) $$
 
-
 In astronomy, the estimated objects are the object and the PSF, while in retina imagery, these are the object and the parameter $\alpha$ which in the ends defines the PSF through linear fit. In astronomy, joint estimation is used in conjunction with a positivity constrain. In both cases, the image is reconstructed and filtered with an *a posteriori* statistics.
-
-
 
 $$ \mathbf{i}_{3 \mathrm{D}}=\mathbf{h}_{3 \mathrm{D}} *_{3 \mathrm{D}} \mathbf{o}_{3 \mathrm{D}}+\mathbf{n} $$
 
@@ -83,12 +78,10 @@ where $\alpha(z)$ is the normalized flux emitted by the plane at depth $z\left(\
 
 $h_{2 \mathrm{D}}(x, y) \approx \sum_j \alpha_j h_j(x, y)$
 
-
 with $h_j(x, y) \triangleq h_{3 \mathrm{D}}\left(x, y, z_j\right)$ the 2D lateral PSF at depth $z_j$ and $\alpha_j=\alpha\left(z_j\right) \Delta z_j$ where $\Delta z_j$ is the effective thickness of the $j$ th layer. We define $\alpha=\left\{\alpha_j\right\}_j$ as the vector of unknowns that parameterize the PSF. $\alpha$ is normalized $\left(\Sigma \alpha_j=1\right)$ and each parameter is positive $\left(\alpha_j \geq 0\right)$. We search for $h_{2 \mathrm{D}}$ as a linear combination of a basis of PSF's, each corresponding to a given plane. In the following, we consider short-exposure diffractive PSF's so that each $h_j$ can be computed from the residual aberrations measured with a WFS and the knowledge of the defocus of plane $z_j$.
 
-
-
 ### Joint estimation
+
 $$
 \begin{aligned}
 {[\hat{\mathbf{o}}, \hat{\mathbf{\alpha}}] } & =\underset{\mathbf{o}, \mathbf{\alpha}}{\arg \max } \; p(\mathbf{i}, \mathbf{o}, \mathbf{\alpha}; \mathbf{\theta}) \\
@@ -134,20 +127,16 @@ $$
 
  The defocus is equal to $\pi$ radian RMS, the noise n is stationary, gaussian with a standard deviation $\sigma = 0.01 \times max(o)$, corresponding roughly to photon noise for an average of 10 000 photons/pixel, and $\alpha =  0.3$.
 
- We assume for the sake of this simulation that the object PSD $S_{\mathrm{o}}$ and the noise PSD $S_{\mathrm{n}}$ are known although it is not the case in practice. Therefore, we perform a so-called "supervised" estimation of $\alpha$ : we compute the joint criterion $J_{\text {jmap }}\left(\alpha ; S_{\mathrm{o}}, S_{\mathrm{n}}\right)$ (see Eq. 13)) for values of $\alpha$ ranging from 0 to 1 to find the value of $\alpha$ that minimizes the joint criterion. 
+ We assume for the sake of this simulation that the object PSD $S_{\mathrm{o}}$ and the noise PSD $S_{\mathrm{n}}$ are known although it is not the case in practice. Therefore, we perform a so-called "supervised" estimation of $\alpha$ : we compute the joint criterion $J_{\text {jmap }}\left(\alpha ; S_{\mathrm{o}}, S_{\mathrm{n}}\right)$ (see Eq. 13)) for values of $\alpha$ ranging from 0 to 1 to find the value of $\alpha$ that minimizes the joint criterion.
 
 ### Marginal estimation
 
-
 ## References
-<a id="1">[1]</a> 
-Jean-Marc Conan, Laurent M. Mugnier, Thierry Fusco, Vincent Michau, and Gerard Rousse | 
-Myopic deconvolution of adaptive optics images by use of object and point-spread function power spectra | 
-APPLIED OPTICS / Vol. 37, No. 21 / 20 July 1998 | 
-© 1998 Optical Society of America
 
-<a id="2">[2]</a> 
-L. Blanco1, L. M. Mugnier1 |
-Marginal blind deconvolution of adaptive optics retinal images |
-7 November 2011 / Vol. 19, No. 23 / OPTICS EXPRESS 23227 |
-© 2011 OSA
+<a id="1">[1]</a>
+
+Jean-Marc Conan, Laurent M. Mugnier, Thierry Fusco, Vincent Michau, and Gerard Rousse | Myopic deconvolution of adaptive optics images by use of object and point-spread function power spectra | APPLIED OPTICS / Vol. 37, No. 21 / 20 July 1998 | © 1998 Optical Society of America
+
+<a id="2">[2]</a>
+
+L. Blanco1, L. M. Mugnier1 |Marginal blind deconvolution of adaptive optics retinal images |7 November 2011 / Vol. 19, No. 23 / OPTICS EXPRESS 23227 |© 2011 OSA

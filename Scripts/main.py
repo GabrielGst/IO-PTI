@@ -122,7 +122,7 @@ saveImsubplots([simulatedObject, simulatedImage, noise, simulatedImageNoised], [
 
 
 ## Compute the noise and signal DSPs
-noiseDsp
+
 
 
 
