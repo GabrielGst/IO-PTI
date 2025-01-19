@@ -82,6 +82,7 @@ with fits.open(filename) as hdul:
     data = primary_hdu.data # The data (typically image data or a 2D array)
     # print("Data:", data)
 
+
 ### Plot psfs for visual check
 # saveImsubplots(data, ["PSF 1", "PSF 2", "PSF 3"], filename="psfs", save=False, plot=True)
 
@@ -94,38 +95,64 @@ psf_1, psf_2, psf_3 = data[0], data[1], data[2]
 
 
 
-## Define PSF
-alpha = 0.3
-psf = alpha * psf_1 + (1 - alpha) * psf_3
+# ## Define PSF
+# alpha = 0.3
+# psf = alpha * psf_1 + (1 - alpha) * psf_3
+
+
+# ### Plot psf for quality check
+# saveImplot(psf, f"Resulting psf for alpha = {alpha}", filename=f"Resulting psf for alpha = {alpha}", save=False, plot=True)
 
 
 
-### Plot psf for quality check
-saveImplot(psf, f"Resulting psf for alpha = {alpha}", filename=f"Resulting psf for alpha = {alpha}", save=False, plot=True)
+# ## Joint estimation
+# # from scipy.signal import convolve2d
+
+# simulatedObject = oObject
+# psfPadded = np.pad(psf, (256, 256), 'wrap') # Use the padded psf for the Fourier transform
+# simulatedImage = sp.fft.ifft2(sp.fft.fft2(simulatedObject) * sp.fft.fft2(psfPadded)).real # Q: Should the psf be fftshifted here ?
+# simulatedImage[:256, :256]
+# noise = 0.01 * np.max(simulatedObject) * np.random.randn(*simulatedImage.shape) # Noise corresponding roughly to photon noise for an average of 10 000 photons/pixels
+# simulatedImageNoised = simulatedImage + noise
+
+
+# ### Plot simulated object, noise, image for quality check
+# saveImsubplots([simulatedObject, simulatedImage, noise, simulatedImageNoised], ["Object", "Image", "Noise", "Noised Image"], filename="simulated_object_image_noisedImage", save=True, plot=True)
 
 
 
-## Joint estimation
-# from scipy.signal import convolve2d
-
-simulatedObject = oObject
-psfPadded = np.pad(psf, (256, 256), 'wrap') # Use the padded psf for the Fourier transform
-simulatedImage = sp.fft.ifft2(sp.fft.fft2(simulatedObject) * sp.fft.fft2(psfPadded)).real # Q: Should the psf be fftshifted here ?
-simulatedImage[:256, :256]
-noise = 0.01 * np.max(simulatedObject) * np.random.randn(*simulatedImage.shape) # Noise corresponding rooughly to photon noise for an average of 10 000 photons/pixels
-simulatedImageNoised = simulatedImage + noise
+# ## Compute the noise and signal DSPs
+# dspNoise = sp.fft.ifft2(sp.fft.fft2(noise) * sp.fft.fft2(noise).conj).real # Correlation therorem
+# dspObject = sp.fft.ifft2(sp.fft.fft2(simulatedObject) * sp.fft.fft2(simulatedObject).conj).real # Correlation therorem
 
 
 
-### Plot simulated object, noise, image for quality check
-saveImsubplots([simulatedObject, simulatedImage, noise, simulatedImageNoised], ["Object", "Image", "Noise", "Noised Image"], filename="simulated_object_image_noisedImage", save=True, plot=True)
+# ## Compute the Jjmap criterion and plot it
+# N =  simulatedImage.shape[0] * simulatedImage.shape[1] # Number of pixels
+# dspNoise = dspNoise.mean() # Average noise power, the noise is white so it is constant, one could have taken dspNoise[0,0]
 
+# Jmap = (
+#     0.5 * N**2 * np.log(dspNoise) +
+#     0.5 * np.sum(np.log(dspObject)) +
+#     0.5 * np.sum(
+#         np.abs(sp.fft.fft2(simulatedImageNoised) - sp.fft.fft2(simulatedImage))**2 /
+#         dspObject /
+#         (np.abs(sp.fft.fft2(psf))**2 + dspNoise / dspObject)
+#     )
+# )
 
-## Compute the noise and signal DSPs
+from functions import JmapCriterion2psf
+from tqdm.auto import tqdm
 
+xAxis = np.linspace(0, 1, 100) # Define the alpha axis
+yAxis = np.zeros(100) # Define the Jmap axis
 
+pbar = tqdm(desc="Jmap computation : ", total=len(xAxis))
 
+for i, alpha in enumerate(xAxis):
+    yAxis[i] = JmapCriterion2psf(oObject, psf_1, psf_3, alpha, verbose=False)
+    pbar.update(len(xAxis))
+pbar.close()
 
-## Compute the Jjmap criterion and plot it
-
-
+### Plot Jmap for quality check
+savePlot(xAxis, yAxis, "Jmap criterion", filename="Jmap_criterion", save=False, plot=True, logX=False, logY=False)

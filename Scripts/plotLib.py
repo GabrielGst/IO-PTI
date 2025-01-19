@@ -6,6 +6,7 @@ Functions:
         Save and plot subplots of images or arrays with plt.imshow()
 """
 
+
 from math import ceil
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
