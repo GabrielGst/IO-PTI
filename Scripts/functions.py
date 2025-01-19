@@ -11,7 +11,7 @@ from plotLib import saveImsubplots, saveImplot
 import numpy as np
 import scipy as sp
 
-def JmapCriterion2psf(oObject, psf_1, psf_2, alpha, verbose=False):
+def JmapCriterion2psf(oObject, dspObject, psf_1, psf_2, alpha, verbose=False):
     """Performs the joint estimation of the object and the PSF using the Jmap criterion. The criterion is computed for the given object, the two PSFs and the alpha value. The simulated image is computed using the object and the PSF. The noise is added to the simulated image. The noise and signal DSPs are computed. The Jmap criterion is computed and returned.
 
     Args:
@@ -40,7 +40,7 @@ def JmapCriterion2psf(oObject, psf_1, psf_2, alpha, verbose=False):
 
     psfPadded = np.pad(psf, (256, 256), 'wrap') # Use the padded psf for the Fourier transform
     simImage = sp.fft.ifft2(sp.fft.fft2(oObject) * sp.fft.fft2(psfPadded)).real # Q: Should the psf be fftshifted here ?
-    simImage[:256, :256]
+    # simImage[:512, :512]
     noise = 0.01 * np.max(oObject) * np.random.randn(*simImage.shape) # Noise corresponding roughly to photon noise for an average of 10 000 photons/pixels
     simImageNoised = simImage + noise
 
@@ -53,8 +53,13 @@ def JmapCriterion2psf(oObject, psf_1, psf_2, alpha, verbose=False):
 
     ## Compute the noise and signal DSPs
     dspNoise = sp.fft.ifft2(sp.fft.fft2(noise) * sp.fft.fft2(noise).conj()).real # Correlation therorem
-    dspObject = sp.fft.ifft2(sp.fft.fft2(oObject) * sp.fft.fft2(oObject).conj()).real # Correlation therorem
+    # dspObject = sp.fft.ifft2(sp.fft.fft2(oObject) * sp.fft.fft2(oObject).conj()).real # Correlation therorem
+    dspObject = dspObject[:1024,:1024] # The DSP of the object is known
+    
 
+    ### Plot simulated object, noise, image for quality check
+    if verbose:
+        saveImsubplots([dspNoise, dspObject], ["DSP of the synthetic noise", "DSP of the synthetic object"], filename="dsp_noise_and_object", columnNumber=2, save=True, plot=True, logScale=True)
 
 
     ## Compute the Jjmap criterion and plot it
@@ -65,7 +70,7 @@ def JmapCriterion2psf(oObject, psf_1, psf_2, alpha, verbose=False):
         0.5 * N**2 * np.log(dspNoise) +
         0.5 * np.sum(np.log(dspObject)) +
         0.5 * np.sum(
-            np.abs(sp.fft.fft2(simImageNoised) - sp.fft.fft2(simImage))**2 /
+            np.abs(sp.fft.fft2(simImageNoised) - sp.fft.fft2(simImage))**2 / # Equivalent to np.abs(sp.fft.fft2(noise))**2
             dspObject /
             (np.abs(sp.fft.fft2(psfPadded))**2 + dspNoise / dspObject) # Q: Is there an impact of using the padded PSF here ?
         )
