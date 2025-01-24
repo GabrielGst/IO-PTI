@@ -63,7 +63,8 @@ saveImplot(oObject, f"Object for rho_0 = {rho_0}", filename=f"Object for rho_0 =
 ## Loading PSF with astropy module, that offers a loading function for Flexible Image Transport Image
 from astropy.io import fits
 
-filename = 'IO-PTI/data/3psfs_zeroPiSur2EtPi.fits' # Open the FITS file
+# 'IO-PTI/data/3psfs_zeroPiSur2EtPi.fits' # Open the FITS file on windows
+filename = './data/3psfs_zeroPiSur2EtPi.fits' # Open the FITS file on ubuntu
 
 with fits.open(filename) as hdul:
     # hdul is a list-like object containing all HDUs (Header Data Units)
@@ -83,7 +84,6 @@ saveImsubplots(data, ["PSF 1", "PSF 2", "PSF 3"], filename="psfs", save=True, pl
 
 
 # Bayesian estimation : Derive alpha from 2 extreme PSF and criterion
-from functions import JmapCriterion2psf
 from tqdm.auto import tqdm
 
 psf_1, psf_2, psf_3 = data[0], data[1], data[2]
@@ -91,12 +91,39 @@ N = 20
 xAxis = [i /(N + 1) for i in range(N + 1)] # Define the alpha axis
 yAxis = np.zeros(N + 1) # Define the Jmap axis
 
+
+
+## Joint estimation
+from functions import jointMAP2psf
+
 pbar = tqdm(desc="Jmap computation", total=100, unit_scale=True)
 
 for i, alpha in enumerate(xAxis):
-    yAxis[i] = JmapCriterion2psf(oObject, dspObject, psf_1, psf_3, alpha, verbose=True if i==1 else False)
+    res = jointMAP2psf(oObject, dspObject, psf_1, psf_3, alpha, verbose=True if i==1 else False)
+    yAxis[i] = res[0]
+    # print(f"Jmap Value for i = {i}: {yAxis[i]}")
     pbar.update(round(100 /(N + 1)))
 pbar.close()
 
 ### Plot Jmap for quality check
 savePlot(xAxis, yAxis, "Jmap criterion", filename="Jmap_criterion", save=True, plot=True, logX=False, logY=False)
+
+
+## Marginal estimation
+
+from functions import marginalML2psf
+
+pbar = tqdm(desc="Jml computation", total=100, unit_scale=True)
+
+for i, alpha in enumerate(xAxis):
+    res = marginalML2psf(oObject, dspObject, psf_1, psf_3, alpha, verbose=True if i==1 else False)
+    yAxis[i] = res
+    # print(f"Jml Value for i = {i}: {yAxis[i]}")
+    pbar.update(round(100 /(N + 1)))
+pbar.close()
+
+### Plot Jmap for quality check
+savePlot(xAxis, yAxis, "Jml criterion", filename="Jml_criterion", save=True, plot=True, logX=False, logY=False)
+
+
+

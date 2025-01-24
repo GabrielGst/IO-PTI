@@ -11,7 +11,8 @@ from math import ceil
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 
-SAVE_PATH = 'IO-PTI/outputs/'
+# SAVE_PATH = 'IO-PTI/outputs/' # Windows
+SAVE_PATH = './outputs/'  # Ubuntu
 
 def savePlot(x, y, title, filename="output", save=False, plot=True, logX=False, logY=False):
     """Save and plot a single serie with plt.plot()
@@ -29,6 +30,7 @@ def savePlot(x, y, title, filename="output", save=False, plot=True, logX=False, 
     ax.plot(x, y)
     ax.set_title(title)
     ax.grid(True, linestyle='-.')
+    ax.ticklabel_format(axis='y', style='sci', scilimits=(4,4))
 
     if logX:
         ax.set_xscale('log')
