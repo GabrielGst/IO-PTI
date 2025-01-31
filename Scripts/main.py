@@ -24,8 +24,8 @@ theta = np.arctan2(xFreq_array, yFreq_array)  # Angle in radians
 
 
 ### Plot modulus and phase for quality check
-saveImplot(rho, "Polar modulus", filename="polar_modulus", save=True, plot=True)
-saveImplot(theta, "Polar phase", filename="polar_phase", save=True, plot=True)
+saveImplot(rho, "Polar modulus", filename="polar_modulus", save=True, plot=False)
+saveImplot(theta, "Polar phase", filename="polar_phase", save=True, plot=False)
 
 
 ## Computes the dsp of the object
@@ -34,13 +34,13 @@ k = 1
 rho_0 = 0.01
 
 dspObject = k /(1 + pow(rho/rho_0,p))
-profile = dspObject[0,:512] # Profile of the radial distance
-freqProfile = freq_vector[:512] # Profile of the frequency vector
+profile = dspObject[0,:1024] # Profile of the radial distance
+freqProfile = freq_vector[:1024] # Profile of the frequency vector
 
 
 ### Plot dspObject for quality check
-savePlot(freqProfile, profile, "Profile of the radial distance", filename="profile_radial_distance", save=True, plot=True, logX=True, logY=True)
-saveImplot(dspObject, f"dspObject for rho_0 = {rho_0}", filename=f"dspObject for rho_0 = {rho_0}", save=True, plot=True, logScale=True)
+savePlot(freqProfile, profile, "Profile of the radial distance", filename="profile_radial_distance", save=True, plot=False, logX=True, logY=True)
+saveImplot(dspObject, f"dspObject for rho_0 = {rho_0}", filename=f"dspObject for rho_0 = {rho_0}", save=True, plot=False, logScale=True)
 
 
 ## Generate the random variable
@@ -56,7 +56,7 @@ oObject = oObject - np.min(oObject) # Remove the offset
 
 
 ### Plot oObject for quality check
-saveImplot(oObject, f"Object for rho_0 = {rho_0}", filename=f"Object for rho_0 = {rho_0}", save=True, plot=True, logScale=False)
+saveImplot(oObject, f"Object for rho_0 = {rho_0}", filename=f"Object for rho_0 = {rho_0}", save=True, plot=False, logScale=False)
 
 
 
@@ -77,7 +77,7 @@ with fits.open(filename) as hdul:
 
 
 ### Plot psfs for visual check
-saveImsubplots(data, ["PSF 1", "PSF 2", "PSF 3"], filename="psfs", save=True, plot=True)
+saveImsubplots(data, ["PSF 1", "PSF 2", "PSF 3"], filename="psfs", save=True, plot=False)
 
 
 
@@ -88,9 +88,15 @@ from tqdm.auto import tqdm
 
 psf_1, psf_2, psf_3 = data[0], data[1], data[2]
 N = 20
-xAxis = [i /(N + 1) for i in range(N + 1)] # Define the alpha axis
+xAxis = [round(i /(N + 1),4) for i in range(N + 1)] # Define the alpha axis
 yAxis = np.zeros(N + 1) # Define the Jmap axis
 
+
+## Initialize synthetic image
+from functions import createSyntheticImage
+
+alpha_0 = 0.3
+simImageNoised, sigma = createSyntheticImage(oObject, psf_1, psf_2, alpha_0, verbose=False)
 
 
 ## Joint estimation
@@ -99,7 +105,7 @@ from functions import jointMAP2psf
 pbar = tqdm(desc="Jmap computation", total=100, unit_scale=True)
 
 for i, alpha in enumerate(xAxis):
-    res = jointMAP2psf(oObject, dspObject, psf_1, psf_3, alpha, verbose=True if i==1 else False)
+    res = jointMAP2psf(oObject, dspObject, psf_1, psf_3, alpha, simImageNoised, sigma)
     yAxis[i] = res[0]
     # print(f"Jmap Value for i = {i}: {yAxis[i]}")
     pbar.update(round(100 /(N + 1)))
@@ -116,7 +122,7 @@ from functions import marginalML2psf
 pbar = tqdm(desc="Jml computation", total=100, unit_scale=True)
 
 for i, alpha in enumerate(xAxis):
-    res = marginalML2psf(oObject, dspObject, psf_1, psf_3, alpha, verbose=True if i==1 else False)
+    res = marginalML2psf(oObject, dspObject, psf_1, psf_3, alpha, simImageNoised, sigma)
     yAxis[i] = res
     # print(f"Jml Value for i = {i}: {yAxis[i]}")
     pbar.update(round(100 /(N + 1)))

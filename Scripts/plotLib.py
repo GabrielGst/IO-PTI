@@ -42,6 +42,8 @@ def savePlot(x, y, title, filename="output", save=False, plot=True, logX=False, 
     if plot:
         plt.show()
     else:
+        plt.close()
+    if not plot and not save:
         print("Please select save or plot option")
 
 
@@ -65,6 +67,8 @@ def saveImplot(data, title, filename="output", save=False, plot=True, logScale=F
     if plot:
         plt.show()
     else:
+        plt.close()
+    if not plot and not save:
         print("Please select save or plot option")
 
 def saveImsubplots(data, legends, filename="output", columnNumber=3, size=(12, 4), save=False, plot=True, logScale=False):
@@ -100,4 +104,6 @@ def saveImsubplots(data, legends, filename="output", columnNumber=3, size=(12, 4
     if plot:
         plt.show()
     else:
+        plt.close()
+    if not plot and not save:
         print("Please select save or plot option")
