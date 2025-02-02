@@ -28,16 +28,16 @@ def createSyntheticImage(oObject, psf_1, psf_2, alpha_0, verbose=False):
     # Define the synthetic image
     ## Define PSF
     psf = alpha_0 * psf_1 + (1 - alpha_0) * psf_2 # The final PSF is a linear combination of the two PSFs
-    psfPadded = np.pad(psf, (768, 768), 'constant') # Object is of size 1024x1024, derived from a dsp of size 2048x2048
+    # psfPadded = np.pad(psf, (768, 768), 'constant') # Object is of size 1024x1024, derived from a dsp of size 2048x2048
     
     ### Plot psf for quality check
     if verbose:
-        saveImplot(psfPadded, f"PSF of the synthetic image for alpha = {alpha_0}", filename=f"PSF of the synthetic image for alpha = {alpha_0}", save=True, plot=False)
+        saveImplot(sp.fft.fftshift(psf), f"PSF of the synthetic image for alpha = {alpha_0}", filename=f"PSF of the synthetic image for alpha = {alpha_0}", save=True, plot=False)
 
 
     ## Shift and crop the PSF to corresponding object size and coordinates reference
-    psfPadded = sp.fft.ifftshift(psfPadded)
-    psfPadded = psfPadded[:1024, :1024]
+    # psfPadded = sp.fft.ifftshift(psfPadded)
+    # psfPadded = psfPadded[:1024, :1024]
     
     
     # ## Compute the Fourier transform of the PSF
@@ -49,7 +49,7 @@ def createSyntheticImage(oObject, psf_1, psf_2, alpha_0, verbose=False):
 
 
     ## Compute the simulated image
-    simImage = sp.fft.ifft2(sp.fft.fft2(oObject) * sp.fft.fft2(psfPadded)) 
+    simImage = sp.fft.ifft2(sp.fft.fft2(oObject) * sp.fft.fft2(psf)) 
     sigma = 0.01 * np.max(oObject)
     noise = sigma * np.random.randn(*simImage.shape) # Noise corresponding roughly to photon noise for an average of 10 000 photons/pixels
     simImageNoised = simImage + noise
@@ -79,12 +79,12 @@ def jointMAP2psf(oObject, dspObject, psf_1, psf_2, alpha, simImageNoised, sigma)
        
     ## Tested alpha and PSF
     h = alpha * psf_1 + (1 - alpha) * psf_2 # The final PSF is a linear combination of the two PSFs
-    hPad = np.pad(h, (768, 768), 'constant') # Object is of size 1024x1024, derived from a dsp of size 2048x2048
+    # hPad = np.pad(h, (768, 768), 'constant') # Object is of size 1024x1024, derived from a dsp of size 2048x2048
     
     
-    ## Shift and crop the PSF to corresponding object size and coordinates reference
-    hPad = sp.fft.ifftshift(hPad)
-    hPad = hPad[:1024, :1024]
+    # ## Shift and crop the PSF to corresponding object size and coordinates reference
+    # hPad = sp.fft.ifftshift(hPad)
+    # hPad = hPad[:1024, :1024]
 
 
     ## Compute the noise and signal DSPs
@@ -99,13 +99,13 @@ def jointMAP2psf(oObject, dspObject, psf_1, psf_2, alpha, simImageNoised, sigma)
         0.5 * N * np.log(dspNoise) + # Here we removed the N**2 factor because it led to a very large negative offset (1e12 order of magnitude). I think it has already been taken into account in the definition of the dsp    
         0.5 * np.sum(np.log(dspObject)) +
         0.5 * np.sum(
-            np.abs(sp.fft.fft2(simImageNoised) - sp.fft.fft2(hPad) * sp.fft.fft2(meanObject))**2 / # Equivalent to np.abs(sp.fft.fft2(noise))**2
+            np.abs(sp.fft.fft2(simImageNoised) - sp.fft.fft2(h) * sp.fft.fft2(meanObject))**2 / # Equivalent to np.abs(sp.fft.fft2(noise))**2
             dspObject /
-            (np.abs(sp.fft.fft2(hPad))**2 + dspNoise / dspObject) # Q: Is there an impact of using the padded PSF here ?
+            (np.abs(sp.fft.fft2(h))**2 + dspNoise / dspObject) # Q: Is there an impact of using the padded PSF here ?
         )
     )
     
-    return Jmap, dspNoise, hPad, N
+    return Jmap, dspNoise, h, N
 
 def marginalML2psf(oObject, dspObject, psf_1, psf_2, alpha, simImageNoised, sigma,):
     """Performs the marginal estimation of the object and the PSF using the Jmap criterion. The criterion is computed for the given object, the two PSFs and the alpha value. The simulated image is computed using the object and the PSF. The noise is added to the simulated image. The noise and signal DSPs are computed. The Jmap criterion is computed and returned.
