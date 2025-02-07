@@ -92,7 +92,12 @@ def jointMAP2psf(oObject, dspObject, psf_1, psf_2, alpha, simImageNoised, sigma)
     N =  simImageNoised.shape[0] * simImageNoised.shape[1] # Number of pixels
     dspNoise = sigma**2 * N # dspNoise.mean() # Average noise power, the noise is white so it is constant, one could have taken dspNoise[0,0] = sigma^2 ici attention à la normalisation avec le nombre de pixel pour garder l'énergie constante
     meanObject = oObject.mean() * np.ones(oObject.shape)
-
+    
+    # if alpha <= 0.1:
+    #     print(f"mean Object shape: {meanObject.shape}")
+    #     print(f"h shape: {h.shape}")
+    #     print(f"im shape: {simImageNoised.shape}")
+    #     print(f"DSP Object shape: {dspObject.shape}")
 
     ## Compute the Jmap criterion
     Jmap = (
@@ -139,30 +144,3 @@ def marginalML2psf(oObject, dspObject, psf_1, psf_2, alpha, simImageNoised, sigm
     )
     
     return Jml, dspNoise, N
-
-def estimatedImage(simImageNoised, oObject, dspObject, dspNoise, alpha, psf_1, psf_2):
-    """Reconstruct an estimated image based on the alpha resulting from the Marginal estimation. The estimated image is computed using the object, the simulated image, the noise and the two PSFs. The final PSF is a linear combination of the two PSFs.
-
-    Args:
-        simImageNoised (float): Synthetic image for which the value of alpha is searched.
-        oObject (float): Object derived from the dsp of the object.
-        dspObject (float): DSP of the object.
-        dspNoise (float): DSP of the noise.
-        alpha (float): Estimated value of alpha.
-        psf_1 (float): First PSF imported.
-        psf_2 (float): Second PSF imported.
-    """
-    
-    ## Define the estimated PSF and average of the object
-    psf = alpha * psf_1 + (1 - alpha) * psf_2 # The final PSF is a linear combination of the two PSFs
-    oM = np.mean(oObject) * np.ones(oObject.shape)
-    
-    ## Compute the estimated image
-    im = (
-        (sp.fft.fft2(psf.conj()) * sp.fft.fft2(simImageNoised) + dspNoise / dspObject * oM) /
-         (np.abs(sp.fft.fft2(psf))**2 + dspNoise / dspObject)
-    )
-    
-    ### Plot psf for quality check
-    saveImplot(im, f"Estimated object for estimated alpha = {alpha}", filename=f"Estimated object for estimated alpha = {alpha}", save=True, plot=True)
-
