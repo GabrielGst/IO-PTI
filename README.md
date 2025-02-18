@@ -1,18 +1,111 @@
-# IO-PTI
+<!-- <h1 align="center">Wind Watch</h1> -->
+<div align="center">
+  <img src="/public/Style/wind-watch.jpg">
+</div>
+
+<h4 align="center">Web app for computing optimized wind-based sailing courses.</h4>
+
+<!-- <h1 align="center"> </h1> -->
+
+<!-- ![version](https://img.shields.io/badge/version-0.0.1-blueviolet) -->
+<div style="flex" align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-blueviolet" alt="version badge">
+  <img src="https://img.shields.io/badge/testing-in%20progress-orange" alt="Testing Status">
+  <img src="https://img.shields.io/badge/development-in%20progress-orange" alt="Development Status">
+  <img src="https://img.shields.io/badge/maintained-yes-brightgreen.svg" alt="Maintenance Status">
+  <img src="https://img.shields.io/badge/launched-no-red.svg" alt="Launch Status">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
+</div>
+
+<!-- ![development](https://img.shields.io/badge/development-in%20progress-orange)
+![maintenance](https://img.shields.io/badge/maintained-yes-brightgreen.svg)
+![launched](https://img.shields.io/badge/launched-no-red.svg)
+![License](https://img.shields.io/badge/license-MIT-blue) -->
+
+<br>
+
+---
 
 Myopic deconvolution of retina images acquired by adaptative optics through bayesian estimation.
 
-## Context
+## Introduction
 
 When an optical system is designed, a theoretical Point Spread Function (PSF) is associated with it. The system built according to this design is calibrated, and the experimental PSF slightly differs from the theoretical one (usually slightly degraded due to the imperfections of the manufacturing processes). For classic usecases of optical systems, like classic photography the in-use PSF will be the experimental one with a good approximation (modulo the aging of the system). However for specific usescases involving middles with variating characteristics (such as optical indices), the PSF is modified with each specific middle. One way of correcting this change of the PSF, due to the changes in the measuring environment, it to introduce adaptative optics (AO) in the design of the optical system. AO will characterize the perturbation (air temperature, winds for astronomical observation involving light propagation in the atmosphere, or of the eye lens and eyeball liquid for retina scanning) and reconstruct the wavefront so that the usecase PSF is partly corrected from this.
 
 This AO design produces better resolved images that can be then improved with digital processing, usually involving deconvolution of the acquired image by the usecase PSF of the system. For deconvolution of images acquired in classic (static) middles, the experimental PSF is used, however here, the estimate of the PSF is to be found to perform such filtering. This situation is called blind deconvolution (or myopic deconvolution since the image still contain information about the PSF). For example, the scheme used in [[1]](#1) uses some available a priori information on the PSF, namely, its positivity and estimates of its ensemble mean and PSD.
 
-In retina imagery, the acquired images are 3 dimensional, however the acquired images are only 2 dimensional (in imagery in general, this concept still holds). So, to look at a specific plane within the depth of focus of the imaging system (outside, the object only contributes by adding background photon flux to the relevant image), it is possible to use the associated PSF. In first approximation, this PSF can be linearly computed between two PSF, in focus and in depth of focus for example. [[2]]
+In retina imagery, the acquired images are 3 dimensional, however the acquired images are only 2 dimensional (in imagery in general, this concept still holds). So, to look at a specific plane within the depth of focus of the imaging system (outside, the object only contributes by adding background photon flux to the relevant image), it is possible to use the associated PSF. In first approximation, this PSF can be linearly computed between two PSF, in focus and in depth of focus for example. [[2]](#2)
 
-## Bayesian estimation
+### Goals
 
-[[2]]
+- 
+
+### Project structure & description
+
+```shell
+.
+├── .github                         # GitHub folder
+├── .gitignore                      
+├── .venv                           # Python virtual environment
+├── .vscode                         # VSCode configuration
+├── data                            
+├── requirements.txt                # Python requeriments
+├── README.md                       # README file
+│   ├── README.md                   # README describing the data
+│   ├── ___.tif                     # Data (images) to analyse
+├── outputs                         # Output images
+├── Scripts
+│   ├── README.md                   # README to get started
+│   ├── main.py                     # Next JS App (App Router)
+```
+
+## Getting Started
+
+### Requirements
+
+#### Python
+
+- Python 3.12+
+- Required Libraries: see `requirements.txt`
+
+### Installation
+
+Run the following command on your local environment:
+
+```shell
+python -m venv
+source .venv/bin/activate # on unix
+.venv/Script/activate # on windows
+pip install -r requirements.txt
+```
+
+Then run the main function :
+
+```bash
+python .Scripts/main.py
+```
+
+## Debugging & Testing
+
+Unitarian test are yet to be defined.
+
+## Learn More
+
+Here, we want to retrieve the object using the inverse convolution of the image and the Point Spread Function (PSF): as an image can be described as the convolution of the object and the PSF, understood as the Fourier Transform of the wave incident on the pupil plane, it is only logical to compute the object that way.
+
+$$
+i = o * PSF
+$$
+
+However, the PSF changes according to the distance of the optical system to the object. We thus have to estimate the right PSF using two extrema : the in-focus and out-of-focus PSF. We thus define the right PSF as :
+
+$$
+PSF = \alpha \times PSF_{In} + (1-\alpha) \times PSF_{Out}
+$$
+
+In reality, the image contains noise that needs to be accounted for in the formula, leading to further consideration when computing inverse convolution and impacting the expression of such filters.
+
+### Bayesian estimation [[2]](#2)
 
 In stochastic approaches the object is seen as one realization of a stochastic process. The object is endowed with an a priori distribution $p(\mathbf{o})$, and Bayes' rule combines the likelihood of the data $p(\mathbf{i} \mid \mathbf{o})$ with this a priori distribution into the a posteriori probability distribution $p(\mathbf{o} \mid \mathbf{i})$ :
 $$
@@ -21,39 +114,53 @@ $$
 
 This leads to two commonly used object estimation methods: the MAP estimation and the MMSE estimation. On the one hand, the MAP estimation defines the restored object as the most probable object, given the data:
 $$
-\hat{\mathbf{o}}_{\text {map }}=\underset{\mathbf{o}}{\arg \max } p(\mathbf{o} \mid \mathbf{i})
+\hat{\mathbf{o}}_{\text {map }}=\underset{\mathbf{o}}{\arg \max } \; p(\mathbf{o} \mid \mathbf{i})
 $$
 
 On the other hand, the MMSE estimator is defined as the one that minimizes, on average, the distance with the true object:
 $$
-\hat{\mathbf{o}}_{\mathrm{mmse}}=\underset{\hat{o}}{\arg \min } E\left(\|\hat{\mathbf{o}}-\mathbf{o}\|^2\right)
+\hat{\mathbf{o}}_{\mathrm{mmse}}=\underset{\hat{o}}{\arg \min } \; E\left(\|\hat{\mathbf{o}}-\mathbf{o}\|^2\right)
 $$
 where $E()$ stands for the mathematical expectation with respect to the object and to the image noise. It can be shown that this estimator is the mean object with respect to the a posteriori probability distribution ${ }^{23,24}$ :
 $$
 \hat{\mathbf{o}}_{\text {mmse }}=E(\mathbf{o} \mid \mathbf{i})=\int \mathbf{o} p(\mathbf{o} \mid \mathbf{i}) \mathrm{d} \mathbf{o}
 $$
 
-In general, the calculation of the MMSE estimator is not tractable unless the estimator is assumed to be linear. The minimization of Eq. (5) under this assumption leads to the Wiener filter. ${ }^{23,24}$ It is important to note that in the case of joint Gaussian statistics for the noise and the object, the Wiener, the MMSE, and the MAP estimators are identical. ${ }^{23}$
+In general, the calculation of the MMSE estimator is not tractable unless the estimator is assumed to be linear. This assumption leads to the Wiener filter. It is important to note that in the case of joint Gaussian statistics for the noise and the object, the Wiener, the MMSE, and the MAP estimators are identical. 
 
-$\begin{aligned} p(\mathbf{o} \mid \mathbf{i}) & \propto p(\mathbf{i} \mid \mathbf{o}) p(\mathbf{o}) \\ & \propto \exp \left[-1 / 2(\mathbf{i}-H \mathbf{o})^t R_n^{-1}(\mathbf{i}-H \mathbf{o})\right] \\ & \times \exp \left[-1 / 2\left(\mathbf{o}-\mathbf{o}_{\mathbf{m}}\right)^t R_o^{-1}\left(\mathbf{o}-\mathbf{o}_{\mathbf{m}}\right)\right],\end{aligned}$
+<!-- ${ }^{23}$ -->
 
 Choosing the regularization function consist in finding the right model for the regularization parameter, ie the PSD of the *a priori* distribution (of the object here). The maximization criterion is composed of two terms classicaly, the likelihood terms, usually a least square term, and the regularization function.
 
-We therefore generalized the deconvolution scheme to the case of myopic deconvolution, in which both the object and the PSF have to be restored. ${ }^{29}$ Similarly to what was done for o, the PSF can be considered a stochastic process. Since the PSF can be considered the temporal average of a large number of short-exposure PSF's, its a priori statistics can reasonably be assumed to be Gaussian. Following the theoretical developments presented in Subsection 4.A.1, our estimator becomes
+$$
+\begin{aligned} p(\mathbf{o} \mid \mathbf{i}) & \propto p(\mathbf{i} \mid \mathbf{o}) p(\mathbf{o}) \\ & \propto \exp \left[-1 / 2(\mathbf{i}-H \mathbf{o})^t R_n^{-1}(\mathbf{i}-H \mathbf{o})\right] \\ & \times \exp \left[-1 / 2\left(\mathbf{o}-\mathbf{o}_{\mathbf{m}}\right)^t R_o^{-1}\left(\mathbf{o}-\mathbf{o}_{\mathbf{m}}\right)\right],\end{aligned}
+$$
+
+### Myopic deconvolution [[2]](#2)
+
+We therefore generalized the deconvolution scheme to the case of myopic deconvolution, in which both the object and the PSF have to be restored. Similarly to what was done for o, the PSF can be considered a stochastic process. Since the PSF can be considered the temporal average of a large number of short-exposure PSF's, its a priori statistics can reasonably be assumed to be Gaussian, and the estimator becomes
+
 $$
 \begin{aligned}
-{[\hat{\mathbf{o}}, \hat{\mathbf{h}}] } & =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } p(\mathbf{o}, \mathbf{h} \mid \mathbf{i}) \\
-& =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } p(\mathbf{i}|\mathbf{o}, \mathbf{h}|) p(\mathbf{o}) p(\mathbf{h}) \\
-& =\underset{\mathbf{o}, \mathbf{h}}{\arg \min } J(\mathbf{o}, \mathbf{h})
+{[\hat{\mathbf{o}}, \hat{\mathbf{h}}] } & =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } \; p(\mathbf{o}, \mathbf{h} \mid \mathbf{i}) \\
+& =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } \; p(\mathbf{i}|\mathbf{o}, \mathbf{h}|) p(\mathbf{o}) p(\mathbf{h}) \\
+& =\underset{\mathbf{o}, \mathbf{h}}{\arg \min } \; J(\mathbf{o}, \mathbf{h})
 \end{aligned}
 $$
-with a new criterion $J(\mathbf{o}, \mathbf{h})$, which is now a function of $\boldsymbol{o}$ and $\mathbf{h}$. This criterion has three terms: One is the opposite of the log likelihood of the data, one is an object regularization term, and one is a PSF regularization term, similar to a recently suggested deterministic approach. ${ }^{43}$ For stationary Gaussian noise, this criterion can be written as
+
+with a new criterion $J(\mathbf{o}, \mathbf{h})$, which is now a function of $\boldsymbol{o}$ and $\mathbf{h}$. This criterion has three terms: One is the opposite of the log likelihood of the data, one is an object regularization term, and one is a PSF regularization term, similar to a recently suggested deterministic approach. For stationary Gaussian noise, this criterion can be written as
+
 $$
+J(\mathbf{o}, \mathbf{h}) =  \sum_f\left[\frac{|\tilde{\mathbf{h}}(f) \tilde{\mathbf{o}}(f)-\tilde{\mathbf{i}}(f)|^2}{\operatorname{PSD}_n(f)}+\frac{\left|\tilde{\mathbf{o}}(f)-\tilde{\mathbf{o}}_{\mathbf{m}}(f)\right|^2}{\operatorname{PSD}_o(f)}+\frac{\left|\tilde{\mathbf{h}}(f)-\tilde{\mathbf{h}}_{\mathbf{m}}(f)\right|^2}{\operatorname{PSD}_h(f)}\right]
+$$
+
+<!-- $$
 \begin{aligned}
 J(\mathbf{o}, \mathbf{h})= & \sum_f\left[\frac{|\tilde{\mathbf{h}}(f) \tilde{\mathbf{o}}(f)-\tilde{\mathbf{i}}(f)|^2}{\operatorname{PSD}_n(f)}+\frac{\left|\tilde{\mathbf{o}}(f)-\tilde{\mathbf{o}}_{\mathbf{m}}(f)\right|^2}{\operatorname{PSD}_o(f)}\right. \\
-& \left.+\frac{\left|\tilde{\mathbf{h}}(f)-\tilde{\mathbf{h}}_{\mathbf{m}}(f)\right|^2}{\operatorname{PSD}_h(f)}\right],
+& \left.+\frac{\left|\tilde{\mathbf{h}}(f)-\tilde{\mathbf{h}}_{\mathbf{m}}(f)\right|^2}{\operatorname{PSD}_h(f)}\right]
 \end{aligned}
-$$
+$$ -->
+
 where $\operatorname{PSD}_h$ is the spatial PSD of the PSF, and $\tilde{\mathbf{h}}_{\mathrm{m}}$ is the ensemble mean OTF (Fourier transform of the ensemble mean PSF). Again, when the noise is not Gaussian (which is the case in astronomical imaging), this estimator is not a true MAP estimator but a myopic RLS estimator, unless the first term of the criterion is replaced with the $\log$ probability of the noise.
 
 The last term (regularization on the PSF) cannot be ignored, otherwise the myopic deconvolution usually leads to the trivial solution: a Dirac function for the PSF and an object equal to the image. $\mathrm{PSD}_h$ is expressed simply as a function of the first two moments of the OTF:
@@ -131,6 +238,19 @@ $$
 
 ### Marginal estimation
 
+## Contributions
+
+Everyone is welcome to contribute to this project. Feel free to open an issue if you have any questions or find a bug. Totally open to suggestions and improvements.
+
+### Future Implementation
+
+- Bathymetric maps integration
+- Tidal heightsd and current forecast integration
+- Boats specification integration
+- Loggin methods
+- Shipyard implementation : register boats to be used
+- Trips list : register trips onto the app for future analytics or sharing with friends
+
 ## References
 
 <a id="1">[1]</a>
@@ -140,3 +260,11 @@ Jean-Marc Conan, Laurent M. Mugnier, Thierry Fusco, Vincent Michau, and Gerard R
 <a id="2">[2]</a>
 
 L. Blanco1, L. M. Mugnier1 |Marginal blind deconvolution of adaptive optics retinal images |7 November 2011 / Vol. 19, No. 23 / OPTICS EXPRESS 23227 |© 2011 OSA
+
+<br>
+
+## License
+
+Licensed under the MIT License, Copyright © 2024
+
+See [LICENSE](LICENSE) for more information.
