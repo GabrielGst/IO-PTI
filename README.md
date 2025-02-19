@@ -91,13 +91,25 @@ Unitarian test are yet to be defined.
 
 ## Learn More
 
-Here, we want to retrieve the object using the inverse convolution of the image and the Point Spread Function (PSF): as an image can be described as the convolution of the object and the PSF, understood as the Fourier Transform of the wave incident on the pupil plane, it is only logical to compute the object that way.
+Here, we want to estimate the object using the inverse convolution of the image and the Point Spread Function (PSF): as an image can be described as the convolution of the object and the PSF, understood as the Fourier Transform of the wave incident on the pupil plane, it is only logical to compute the object that way.
 
 $$
 i = o * PSF
 $$
 
-However, the PSF changes according to the distance of the optical system to the object. We thus have to estimate the right PSF using two extrema : the in-focus and out-of-focus PSF. We thus define the right PSF as :
+where 
+
+$$
+h = PSF = \mid FT[\Phi(u) \, P(u)] \mid ^2
+$$
+
+We will call Optical Transfer Function (OTF) the Fourier transform of the PSF :
+
+$$
+\tilde{h} = OTF = FT[PSF]
+$$
+
+However, the PSF changes according to the distance of the optical system to the object. We thus also have to estimate the right PSF using two extrema : the in-focus and out-of-focus PSF. We thus define the right PSF as :
 
 $$
 PSF = \alpha \times PSF_{In} + (1-\alpha) \times PSF_{Out}
@@ -105,11 +117,33 @@ $$
 
 In reality, the image contains noise that needs to be accounted for in the formula, leading to further consideration when computing inverse convolution and impacting the expression of such filters.
 
+### Retina imaging
+
+$$ \mathbf{i}_{3 \mathrm{D}}=\mathbf{h}_{3 \mathrm{D}} *_{3 \mathrm{D}} \mathbf{o}_{3 \mathrm{D}}+\mathbf{n} $$
+
+$$ \mathbf{i}_{2 \mathrm{D}}=\mathbf{h}_{2 \mathrm{D}} *_{2 \mathrm{D}} \mathbf{o}_{2 \mathrm{D}}+\mathbf{n} $$
+
+We assume that our object is shift invariant along the optical axis:
+$$
+o_{3 \mathrm{D}}(x, y, z)=o_{2 \mathrm{D}}(x, y) \alpha(z)
+$$
+where $\alpha(z)$ is the normalized flux emitted by the plane at depth $z$ (considering $\int \alpha(z) \mathrm{d} z=1$).
+
+$$
+h_{2 \mathrm{D}}(x, y) \approx \sum_j \alpha_j h_j(x, y)
+$$
+with $h_j(x, y) \triangleq h_{3 \mathrm{D}}\left(x, y, z_j\right)$ the 2D lateral PSF at depth $z_j$ and $\alpha_j=\alpha\left(z_j\right) \Delta z_j$ where $\Delta z_j$ is the effective thickness of the $j$ th layer. We define $\alpha=\left\{\alpha_j\right\}_j$ as the vector of unknowns that parameterize the PSF. $\alpha$ is normalized $\left(\Sigma \alpha_j=1\right)$ and each parameter is positive $\left(\alpha_j \geq 0\right)$.
+
+We search for $h_{2 \mathrm{D}}$ as a linear combination of a basis of PSF's, each corresponding to a given plane. In the following, we consider short-exposure diffractive PSF's so that each $h_j$ can be computed from the residual aberrations measured with a WFS and the knowledge of the defocus of plane $z_j$.
+
+
+Hereafter are extractions from [[1]](#1) and [[2]](#2) that describes bayesian principles in joint and marginal estimation.
+
 ### Bayesian estimation [[2]](#2)
 
 In stochastic approaches the object is seen as one realization of a stochastic process. The object is endowed with an a priori distribution $p(\mathbf{o})$, and Bayes' rule combines the likelihood of the data $p(\mathbf{i} \mid \mathbf{o})$ with this a priori distribution into the a posteriori probability distribution $p(\mathbf{o} \mid \mathbf{i})$ :
 $$
-p(\mathbf{o} \mid \mathbf{i}) \propto p(\mathbf{i} \mid \mathbf{o}) p(\mathbf{o})
+p(\mathbf{o} \mid \mathbf{i}) \propto p(\mathbf{i} \mid \mathbf{o}) \;p(\mathbf{o})
 $$
 
 This leads to two commonly used object estimation methods: the MAP estimation and the MMSE estimation. On the one hand, the MAP estimation defines the restored object as the most probable object, given the data:
@@ -123,7 +157,7 @@ $$
 $$
 where $E()$ stands for the mathematical expectation with respect to the object and to the image noise. It can be shown that this estimator is the mean object with respect to the a posteriori probability distribution ${ }^{23,24}$ :
 $$
-\hat{\mathbf{o}}_{\text {mmse }}=E(\mathbf{o} \mid \mathbf{i})=\int \mathbf{o} p(\mathbf{o} \mid \mathbf{i}) \mathrm{d} \mathbf{o}
+\hat{\mathbf{o}}_{\text {mmse }}=E(\mathbf{o} \mid \mathbf{i})=\int \mathbf{o} \, p(\mathbf{o} \mid \mathbf{i}) \, \mathrm{d} \mathbf{o}
 $$
 
 In general, the calculation of the MMSE estimator is not tractable unless the estimator is assumed to be linear. This assumption leads to the Wiener filter. It is important to note that in the case of joint Gaussian statistics for the noise and the object, the Wiener, the MMSE, and the MAP estimators are identical. 
@@ -143,12 +177,12 @@ We therefore generalized the deconvolution scheme to the case of myopic deconvol
 $$
 \begin{aligned}
 {[\hat{\mathbf{o}}, \hat{\mathbf{h}}] } & =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } \; p(\mathbf{o}, \mathbf{h} \mid \mathbf{i}) \\
-& =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } \; p(\mathbf{i}|\mathbf{o}, \mathbf{h}|) p(\mathbf{o}) p(\mathbf{h}) \\
+& =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } \; p(\mathbf{i}|\mathbf{o}, \mathbf{h}) \, p(\mathbf{o}) \, p(\mathbf{h}) \\
 & =\underset{\mathbf{o}, \mathbf{h}}{\arg \min } \; J(\mathbf{o}, \mathbf{h})
 \end{aligned}
 $$
 
-with a new criterion $J(\mathbf{o}, \mathbf{h})$, which is now a function of $\boldsymbol{o}$ and $\mathbf{h}$. This criterion has three terms: One is the opposite of the log likelihood of the data, one is an object regularization term, and one is a PSF regularization term, similar to a recently suggested deterministic approach. For stationary Gaussian noise, this criterion can be written as
+with a new criterion $J(\mathbf{o}, \mathbf{h})$, which is now a function of $\boldsymbol{o}$ and $\mathbf{h}$. This criterion has three terms: one is the opposite of the log likelihood of the data, one is an object regularization term, and one is a PSF regularization term, similar to a recently suggested deterministic approach. For stationary Gaussian noise, this criterion can be written as
 
 $$
 J(\mathbf{o}, \mathbf{h}) =  \sum_f\left[\frac{|\tilde{\mathbf{h}}(f) \tilde{\mathbf{o}}(f)-\tilde{\mathbf{i}}(f)|^2}{\operatorname{PSD}_n(f)}+\frac{\left|\tilde{\mathbf{o}}(f)-\tilde{\mathbf{o}}_{\mathbf{m}}(f)\right|^2}{\operatorname{PSD}_o(f)}+\frac{\left|\tilde{\mathbf{h}}(f)-\tilde{\mathbf{h}}_{\mathbf{m}}(f)\right|^2}{\operatorname{PSD}_h(f)}\right]
@@ -168,31 +202,19 @@ $$
 \operatorname{PSD}_h(f)=E\left[\left|\tilde{\mathbf{h}}(f)-\tilde{\mathbf{h}}_{\mathrm{m}}(f)\right|^2\right]=E\left[|\tilde{\mathbf{h}}(f)|^2\right]-\left|\tilde{\mathbf{h}}_{\mathrm{m}}(f)\right|^2
 $$
 
-The restoration quality can be quantitatively evaluated by the calculation of a distance to the true object $\mathbf{o}$, defined in [[2]] as :
+The restoration quality can be quantitatively evaluated by the calculation of a distance to the true object $\mathbf{o}$, defined in [[2]](#2) as :
 $$ d(\hat{\mathbf{o}}, \mathbf{o})=\left[\frac{1}{N_{\text {pix }}} \sum_{\text {pixels }}|\hat{\mathbf{o}}(r)-\mathbf{o}(r)|^2\right]^{1 / 2}(photons/pixel) $$
 
 In astronomy, the estimated objects are the object and the PSF, while in retina imagery, these are the object and the parameter $\alpha$ which in the ends defines the PSF through linear fit. In astronomy, joint estimation is used in conjunction with a positivity constrain. In both cases, the image is reconstructed and filtered with an *a posteriori* statistics.
 
-$$ \mathbf{i}_{3 \mathrm{D}}=\mathbf{h}_{3 \mathrm{D}} *_{3 \mathrm{D}} \mathbf{o}_{3 \mathrm{D}}+\mathbf{n} $$
-
-$$ \mathbf{i}_{2 \mathrm{D}}=\mathbf{h}_{2 \mathrm{D}} *_{2 \mathrm{D}} \mathbf{o}_{2 \mathrm{D}}+\mathbf{n} $$
-
-We assume that our object is shift invariant along the optical axis:
-$$
-o_{3 \mathrm{D}}(x, y, z)=o_{2 \mathrm{D}}(x, y) \alpha(z)
-$$
-where $\alpha(z)$ is the normalized flux emitted by the plane at depth $z\left(\int \alpha(z) \mathrm{d} z=1\right)$.
-
-$h_{2 \mathrm{D}}(x, y) \approx \sum_j \alpha_j h_j(x, y)$
-
-with $h_j(x, y) \triangleq h_{3 \mathrm{D}}\left(x, y, z_j\right)$ the 2D lateral PSF at depth $z_j$ and $\alpha_j=\alpha\left(z_j\right) \Delta z_j$ where $\Delta z_j$ is the effective thickness of the $j$ th layer. We define $\alpha=\left\{\alpha_j\right\}_j$ as the vector of unknowns that parameterize the PSF. $\alpha$ is normalized $\left(\Sigma \alpha_j=1\right)$ and each parameter is positive $\left(\alpha_j \geq 0\right)$. We search for $h_{2 \mathrm{D}}$ as a linear combination of a basis of PSF's, each corresponding to a given plane. In the following, we consider short-exposure diffractive PSF's so that each $h_j$ can be computed from the residual aberrations measured with a WFS and the knowledge of the defocus of plane $z_j$.
+Hereafter we switch back to the estimation of $\alpha$ that leads to estimating $h$.
 
 ### Joint estimation
 
 $$
 \begin{aligned}
-{[\hat{\mathbf{o}}, \hat{\mathbf{\alpha}}] } & =\underset{\mathbf{o}, \mathbf{\alpha}}{\arg \max } \; p(\mathbf{i}, \mathbf{o}, \mathbf{\alpha}; \mathbf{\theta}) \\
-& =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } \;p(\mathbf{i}|\mathbf{o}, \mathbf{\alpha}; \mathbf{\theta}) p(\mathbf{o;\theta}) p(\mathbf{\alpha;\theta})
+{[\hat{\mathbf{o}}, \hat{\mathbf{\alpha}}] } & =\underset{\mathbf{o}, \mathbf{\alpha}}{\arg \max } \; p(\mathbf{o}\mid \mathbf{i}, \mathbf{\alpha}; \mathbf{\theta}) \\
+& =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } \; p(\mathbf{i} \mid \mathbf{o}, \mathbf{\alpha}; \mathbf{\theta}) \, p(\mathbf{o;\theta}) \, p(\mathbf{\alpha;\theta})
 \end{aligned}
 $$
 
