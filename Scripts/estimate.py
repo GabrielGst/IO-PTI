@@ -31,7 +31,7 @@ def jointEstimation(oObject, dspObject, psf_1, psf_3, simImageNoised, sigma, xAx
     pbar.close()
 
     ### Plot Jmap for quality check
-    savePlot(xAxis, yAxis, "Jmap criterion", filename=f"Jmap_criterion{name}", save=True, plot=True, logX=False, logY=False)
+    savePlot(xAxis, yAxis, "MAP-estimated alpha", filename=f"MAP-estimated alpha {name}", save=True, plot=True, logX=False, logY=False)
 
 
 ## Marginal estimation
@@ -53,7 +53,7 @@ def marginalEstimation(oObject, dspObject, psf_1, psf_3, simImageNoised, sigma, 
         N (int): Number of points for the alpha axis.
     """
        
-    pbar = tqdm(desc="Jml computation", total=N, unit_scale=True)
+    pbar = tqdm(desc="ML-estimated alpha", total=N, unit_scale=True)
 
     for i, alpha in enumerate(xAxis):
         res = marginalML2psf(oObject, dspObject, psf_1, psf_3, alpha, simImageNoised, sigma)
@@ -63,10 +63,10 @@ def marginalEstimation(oObject, dspObject, psf_1, psf_3, simImageNoised, sigma, 
     pbar.close()
 
     ### Plot Jmap for quality check
-    savePlot(xAxis, yAxis, "Jml criterion", filename=f"Jml_criterion {name}", save=True, plot=True, logX=False, logY=False)
+    savePlot(xAxis, yAxis, f"ML-estimated alpha {name}", filename=f"ML-estimated alpha {name}", save=True, plot=True, logX=False, logY=False)
 
     alpha_min = xAxis[yAxis.argmin()]
-    print(f"Minimal argument of estimation function {alpha_min}")
+    print(f"Minimal argument of estimation function : {alpha_min}")
     
     return alpha_min
 
@@ -100,6 +100,6 @@ def estimatedObject(image, oObject, dspObject, dspNoise, alpha, psf_1, psf_2, na
     o = o - o.min()
     # o[o > 1e-3] = 0
     # o = o.real - o.real.mean()
-    saveImplot(o, f"Estimated {name} object for estimated alpha = {alpha}", filename=f"Estimated {name} object for estimated alpha = {alpha}", save=True, plot=True, logScale=False)
-    saveImsubplots([oObject.real, o], [f"Original {name} object", f"Estimated {name} object"], filename=f" {name} original object vs estimated object", save=True, plot=True)
+    saveImplot(o, f"ML-estimated object ({name}) for estimated alpha = {alpha}", filename=f"ML-estimated object ({name}) for estimated alpha = {alpha}", save=True, plot=True, logScale=False)
+    saveImsubplots([oObject.real, o], [f"Original ({name})", f"Estimated object ({name})"], filename=f"original vs estimated object ({name})", save=True, plot=True)
     return o

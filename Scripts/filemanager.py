@@ -22,15 +22,19 @@ def openImage(imageName: str):
     """
     
     image = Image.open("./data/" + imageName)
-    image_data = np.array(image)
+    im = np.array(image)
+    im = im/np.max(im) * 1e-4
+    
+    # big = max(im.shape)
+    # im = np.pad(im, ((big - im.shape[0])//2, (big - im.shape[1])//2), 'constant')
+    shape = im.shape
     
     ### Plot image for visual check
-    saveImplot(image_data, f"Opened image: {imageName}", filename=f"opened_image_{imageName}", save=True, plot=False, logScale=False)
-    shape = image_data.shape
+    saveImplot(im, f"{imageName}", filename=f"Opened {imageName}", save=True, plot=True, logScale=False)
     
-    return image_data, shape
+    return im, shape
 
-def updatePsfSize(psf, shape, verbose=False):
+def updatePsfSize(psf, shape, name, verbose=False):
     """
     Update the size of the PSF to match the shape of the object.
 
@@ -42,18 +46,18 @@ def updatePsfSize(psf, shape, verbose=False):
     Returns:
         np.ndarray: The updated PSF with the desired shape.
     """
-    psf = psf[150:350, 150:350] # Crop the PSF to the desired size
-    res = np.pad(psf, ((2*shape[0] - psf.shape[0])//2, (2*shape[1] - psf.shape[1])//2), 'constant')
+    psf = psf[psf.shape[0]//2 - 100:psf.shape[0]//2 + 100,psf.shape[1]//2 - 100:psf.shape[1]//2 + 100] # Crop the PSF to the desired size
+    res = np.pad(psf, ((2*shape[1] - psf.shape[0])//2, (2*shape[1] - psf.shape[1])//2), 'constant')
     res = sp.fft.ifftshift(res)
     res = res[:shape[0], :shape[1]]
     if verbose:
-        saveImplot(res, "Updated PSF", filename="updated_psf", save=False, plot=False)
+        saveImplot(res, f"Updated PSF {shape} ({name})", filename=f"Updated psf {shape} ({name})", save=True, plot=True)
         
     return res
 
 
 
-def createObject(nPoints = 2048, sampling_rate = 1, p=2, k=1, rho_0=0.01):
+def createObject(name, nPoints = 2048, sampling_rate = 1, p=2, k=1, rho_0=0.01):
     """
     Create a synthetic object using a Gaussian random field.
 
@@ -80,8 +84,8 @@ def createObject(nPoints = 2048, sampling_rate = 1, p=2, k=1, rho_0=0.01):
 
 
     ### Plot modulus and phase for quality check
-    saveImplot(rho, "Polar modulus", filename="polar_modulus", save=True, plot=False)
-    saveImplot(theta, "Polar phase", filename="polar_phase", save=True, plot=False)
+    saveImplot(rho, "Frequency modulus (polar)", filename="Polar modulus", save=True, plot=False)
+    saveImplot(theta, "Frequency phase (polar)", filename="Polar phase", save=True, plot=False)
 
 
     ## Computes the dsp of the object
@@ -91,8 +95,8 @@ def createObject(nPoints = 2048, sampling_rate = 1, p=2, k=1, rho_0=0.01):
 
 
     ### Plot dspObject for quality check
-    savePlot(freqProfile, profile, "Profile of the radial distance", filename="profile_radial_distance", save=True, plot=False, logX=True, logY=True)
-    saveImplot(dspObject, f"dspObject for rho_0 = {rho_0}", filename=f"dspObject for rho_0 = {rho_0}", save=True, plot=False, logScale=True)
+    savePlot(freqProfile, profile, f"Frequency profile ({name}) (k, p, rho_0) = ({k}, {p}, {rho_0})", filename=f"Frequency profile ({name}) (k, p, rho_0) = ({k}, {p}, {rho_0})", save=True, plot=True, logX=True, logY=True)
+    saveImplot(dspObject, f"DSP object ({name}) (k, p, rho_0) = ({k}, {p}, {rho_0})", filename=f"DSP object ({name}) (k, p, rho_0) = ({k}, {p}, {rho_0})", save=True, plot=False, logScale=True)
 
 
     ## Generate the random variable
@@ -108,7 +112,7 @@ def createObject(nPoints = 2048, sampling_rate = 1, p=2, k=1, rho_0=0.01):
 
 
     ### Plot oObject for quality check
-    saveImplot(oObject, f"Object for rho_0 = {rho_0}", filename=f"Object for rho_0 = {rho_0}", save=True, plot=False, logScale=False)
+    saveImplot(oObject, f"Object (k, p, rho_0) = ({k}, {p}, {rho_0})", filename=f"Object (k, p, rho_0) = ({k}, {p}, {rho_0})", save=True, plot=False, logScale=False)
 
     return oObject, dspObject
 
@@ -131,7 +135,7 @@ def openPsfs():
         # print("Data:", data)
     
     ### Plot psfs for visual check
-    saveImsubplots(data, ["PSF 1", "PSF 2", "PSF 3"], filename="psfs", save=True, plot=False)
+    saveImsubplots(data, ["PSF 1", "PSF 2", "PSF 3"], filename="Opened PSFs", save=True, plot=True)
 
 
     return data

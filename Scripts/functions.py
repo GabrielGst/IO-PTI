@@ -32,7 +32,8 @@ def createSyntheticImage(oObject, psf_1, psf_2, alpha_0, verbose=False):
     
     ### Plot psf for quality check
     if verbose:
-        saveImplot(sp.fft.fftshift(psf), f"PSF of the synthetic image for alpha = {alpha_0}", filename=f"PSF of the synthetic image for alpha = {alpha_0}", save=True, plot=False)
+        saveImplot(psf[:100,:100], f"Synthetic PSF for alpha = {alpha_0}", filename=f"Synthetic PSF for alpha = {alpha_0}", save=True, plot=True)
+        saveImplot(oObject[:100,:100], f"Synthetic object for alpha = {alpha_0}", filename=f"Synthetic object for alpha = {alpha_0}", save=True, plot=True)
 
 
     ## Shift and crop the PSF to corresponding object size and coordinates reference
@@ -56,7 +57,7 @@ def createSyntheticImage(oObject, psf_1, psf_2, alpha_0, verbose=False):
     
     ### Plot simulated object, noise, image for quality check
     if verbose:
-        saveImsubplots([oObject, simImage.real, noise, simImageNoised.real], ["Object", "Image", "Noise", "Noised Image"], filename="simulated_object_image_noisedImage", save=True, plot=True)
+        saveImsubplots([oObject, noise, simImageNoised.real], ["Object", "Noise", "Noised Image"], filename=f"Synthetic object and image alpha = {alpha_0}", save=True, plot=True)
 
 
     return simImageNoised, sigma
@@ -92,6 +93,8 @@ def jointMAP2psf(oObject, dspObject, psf_1, psf_2, alpha, simImageNoised, sigma)
     N =  simImageNoised.shape[0] * simImageNoised.shape[1] # Number of pixels
     dspNoise = sigma**2 * N # dspNoise.mean() # Average noise power, the noise is white so it is constant, one could have taken dspNoise[0,0] = sigma^2 ici attention à la normalisation avec le nombre de pixel pour garder l'énergie constante
     meanObject = oObject.mean() * np.ones(oObject.shape)
+    # print(f"o mean : {oObject.mean()}")
+    # print(f"h mean : {h.mean()}")
     
     # if alpha <= 0.1:
     #     print(f"mean Object shape: {meanObject.shape}")
