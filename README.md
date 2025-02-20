@@ -139,7 +139,7 @@ We search for $h_{2 \mathrm{D}}$ as a linear combination of a basis of PSF's, ea
 
 Hereafter are extractions from [[1]](#1) and [[2]](#2) that describes bayesian principles in joint and marginal estimation.
 
-### Bayesian estimation [[2]](#2)
+### Bayesian estimation [[1]](#1)
 
 In stochastic approaches the object is seen as one realization of a stochastic process. The object is endowed with an a priori distribution $p(\mathbf{o})$, and Bayes' rule combines the likelihood of the data $p(\mathbf{i} \mid \mathbf{o})$ with this a priori distribution into the a posteriori probability distribution $p(\mathbf{o} \mid \mathbf{i})$ :
 $$
@@ -213,12 +213,12 @@ Hereafter we switch back to the estimation of $\alpha$ that leads to estimating 
 
 $$
 \begin{aligned}
-{[\hat{\mathbf{o}}, \hat{\mathbf{\alpha}}] } & =\underset{\mathbf{o}, \mathbf{\alpha}}{\arg \max } \; p(\mathbf{o}\mid \mathbf{i}, \mathbf{\alpha}; \mathbf{\theta}) \\
+{[\hat{\mathbf{o}}, \hat{\mathbf{\alpha}}] } & =\underset{\mathbf{o}, \mathbf{\alpha}}{\arg \max } \; p(\mathbf{o}, \mathbf{\alpha} \mid \mathbf{i} ; \mathbf{\theta}) \\
 & =\underset{\mathbf{o}, \mathbf{h}}{\arg \max } \; p(\mathbf{i} \mid \mathbf{o}, \mathbf{\alpha}; \mathbf{\theta}) \, p(\mathbf{o;\theta}) \, p(\mathbf{\alpha;\theta})
 \end{aligned}
 $$
 
-where, $p(\mathbf{i}, \mathbf{o}, \alpha ; \boldsymbol{\theta})$ is the joint probability density of the data (i), of the 2D object (o), and of the PSF decomposition coefficients ( $\alpha$ ). It may depend on set of regularization parameters or hyperparameters $(\theta) \cdot p(\mathbf{i} \mid \mathbf{0}, \alpha ; \theta)$ is the likelihood of the data $\mathbf{i}, p(\mathbf{0} ; \theta)$ is the a priori probability density function of the object $\mathbf{o}$ and $p(\alpha ; \theta)$ is the a priori probability density function of the coefficients $\alpha$. In the following, we will not use any regularization on the set of coefficients $\alpha$ because we don not have any probability law for the PSF coefficients. However, since we only need to estimate a small number of these coefficients, this is not a problem.
+where $p( \mathbf{o}, \alpha \mid \mathbf{i} ; \boldsymbol{\theta})$ is the joint probability density of the data, of the 2D object, and of the PSF decomposition coefficients ($\alpha$). It may depend on set of regularization parameters or hyperparameters ($\theta$). $p(\mathbf{i} \mid \mathbf{o}, \alpha ; \theta)$ is the likelihood of the data, $p(\mathbf{o} ; \theta)$ is the a priori probability density function of the object $\mathbf{o}$ and $p(\alpha ; \theta)$ is the a priori probability density function of the coefficients $\alpha$. In the following, we will not use any regularization on the set of coefficients $\alpha$ because we do not have any probability law for the PSF coefficients. However, since we only need to estimate a small number of these coefficients, this is not a problem.
 
 The noise on the images is mainly photon noise which has a Poisson distribution. However, AO retinal images are dominated by a strong and quite homogeneous background. In the following, we will therefore assume that the noise is stationary white Gaussian with a variance $\sigma^2$. For the object, we choose a stationary Gaussian prior probability distribution with a mean value $\mathbf{o}_{\mathrm{m}}$ and a covariance matrix $\mathbf{R}_0$. The set of hyperarameters is therefore $\theta=\left(\sigma^2, \mathbf{o}_m, \mathbf{R}_o\right)$. Under these assumptions, we have:
 $$
@@ -228,15 +228,17 @@ $$
 \end{aligned}
 $$
 
-$\hat{\mathbf{o}}(\alpha, \theta)=\left(\mathbf{H}^t \mathbf{H}+\sigma^2 \mathbf{R}_0^{-1}\right)^{-1}\left(\mathbf{H}^t \mathbf{i}+\sigma^2 \mathbf{R}_0^{-1} \mathbf{o}_{\mathrm{m}}\right)$
+$$
+\hat{\mathbf{o}}(\alpha, \theta)=\left(\mathbf{H}^t \mathbf{H}+\sigma^2 \mathbf{R}_0^{-1}\right)^{-1}\left(\mathbf{H}^t \mathbf{i}+\sigma^2 \mathbf{R}_0^{-1} \mathbf{o}_{\mathrm{m}}\right)
+$$
 
 Since the matrices $\mathbf{H}$ (convolution operator) and $\mathbf{R}_0$ (covariance matrix of an object with a stationary probability density) are Toeplitz-block-Toeplitz, we can write the joint criterion $J_{\text {jmap }}$ and the analytical expression of the object $\hat{\boldsymbol{o}}(\alpha, \theta)$ in the Fourier domain with a circulant approximation:
 
-$\hat{\tilde{\mathbf{o}}}(\alpha)=\frac{\tilde{h}^*(v) \tilde{i}(v)+\frac{S_{\mathrm{n}}}{S_0(v)} \tilde{o}_{\mathrm{m}}(v)}{|\tilde{h}(v)|^2+\frac{S_0}{S_0(v)}}$
+$$
+\hat{\tilde{\mathbf{o}}}(\alpha)=\frac{\tilde{h}^*(v) \tilde{i}(v)+\frac{S_{\mathrm{n}}}{S_0(v)} \tilde{o}_{\mathrm{m}}(v)}{|\tilde{h}(v)|^2+\frac{S_0}{S_0(v)}}
+$$
 
-where $S_{\mathrm{n}}$ is the noise power spectral density (PSD), $S_{\mathrm{o}}$ is the object PSD (the new set of hyperparameters in the Fourier domain is $\left\{S_{\mathrm{n}}, S_{\mathrm{o}}\right\}$ ), $v$ is the spatial frequency and $\tilde{x}$ denotes the two-dimensional Fast Fourier Transform of $x$.
-$\hat{\tilde{\mathbf{\delta}}}(\alpha)$ is the estimated object after classical Wiener filtering of the image $\mathbf{i}$ and is easily computed.
-If we substitute Eq. (12) into Eq. (11), we obtain a new expression of $J_{\text {jmap }}$ that does not depend explicitly on the object:
+where $S_{\mathrm{n}}$ is the noise power spectral density (PSD), $S_{\mathrm{o}}$ is the object PSD (the new set of hyperparameters in the Fourier domain is $\left\{S_{\mathrm{n}}, S_{\mathrm{o}}\right\}$ ), $v$ is the spatial frequency and $\tilde{x}$ denotes the two-dimensional Fast Fourier Transform of $x$. $\hat{\tilde{\mathbf{o}}}(\alpha)$ is the estimated object after classical Wiener filtering of the image $\mathbf{i}$ and is easily computed. If we substitute $\hat{\tilde{\mathbf{o}}}(\alpha)$ in $J_{\text {jmap }}$, we obtain a new expression $J'_{\text {jmap }}$ that does not depend explicitly on the object:
 
 $$
 \begin{aligned}
@@ -254,11 +256,39 @@ $$
 \mathbf{i}=\left(\alpha * \mathbf{h}_{\mathrm{foc}}+(1-\alpha) \mathbf{h}_{\mathrm{defoc}}\right) * \mathbf{o}+\mathbf{n}
 $$
 
- The defocus is equal to $\pi$ radian RMS, the noise n is stationary, gaussian with a standard deviation $\sigma = 0.01 \times max(o)$, corresponding roughly to photon noise for an average of 10 000 photons/pixel, and $\alpha =  0.3$.
+The defocus is equal to $\pi$ radian RMS, the noise n is stationary, gaussian with a standard deviation $\sigma = 0.01 \times max(o)$, corresponding roughly to photon noise for an average of 10 000 photons/pixel, and $\alpha =  0.3$.
 
- We assume for the sake of this simulation that the object PSD $S_{\mathrm{o}}$ and the noise PSD $S_{\mathrm{n}}$ are known although it is not the case in practice. Therefore, we perform a so-called "supervised" estimation of $\alpha$ : we compute the joint criterion $J_{\text {jmap }}\left(\alpha ; S_{\mathrm{o}}, S_{\mathrm{n}}\right)$ (see Eq. 13)) for values of $\alpha$ ranging from 0 to 1 to find the value of $\alpha$ that minimizes the joint criterion.
+We assume for the sake of this simulation that the object PSD $S_{\mathrm{o}}$ and the noise PSD $S_{\mathrm{n}}$ are known although it is not the case in practice. Here, we therefore perform a so-called "supervised" estimation of $\alpha$ : we compute the joint criterion $J_{\text {jmap }}\left(\alpha ; S_{\mathrm{o}}, S_{\mathrm{n}}\right)$ for values of $\alpha$ ranging from 0 to 1 to find the value of $\alpha$ that minimizes the joint criterion, and according to an object DSP :
+ 
+$$
+DSP_o = S_o = \frac{k}{1+(\rho/\rho_0)^p}
+$$
+
+with $(k, p, \rho_0) = (1, 3, 1)$. Please note that in practice, the estimation of the object DSP should be estimated from the acquired image. For example, the expression used here can be used with estimation of the set of parameters $(k, p, \rho_0)$.
 
 ### Marginal estimation
+
+The principle of marginal estimation is to integrate the object $o$ out of the problem (i.e., marginalize the posterior likelihood). We integrate the joint probability of the object $o$ and the PSF parameters $\alpha$ over all the possible values of object $o$.
+$$
+\hat{\alpha}=\underset{\alpha}{\arg \max } \int p( \mathbf{o}, \alpha \mid \mathbf{i} ; \theta) \, \mathrm{d} \mathbf{o}
+$$
+
+Marginalization reduces the number of unknowns to be retrieved (from the total number of pixels of the image + the PSF parameters in the joint estimation case to just a few PSF parameters) and gives us a true maximum likelihood or maximum a posteriori (depending on the prior on the estimated parameters) estimator of the parameters of interest (namely, the PSF parameters). After estimation of the PSF parameters $\alpha$, the object is restored by Wiener filtering of the image with the estimated global PSF and hyperparameters.
+
+$$
+\hat{\alpha}_{ML}=\underset{\alpha}{\operatorname{argmax}} \; p( \alpha \mid \mathbf{i} ; \theta)=\underset{\alpha}{\operatorname{argmax}} \; p(\mathbf{i} \mid \alpha ; \theta) \, p(\alpha ; \theta)
+$$
+
+We keep the assumptions made for the joint estimation: a stationary white Gaussian noise with variance $\sigma^2$, stationary Gaussian prior probability distribution with a mean value $0_{\mathrm{m}}$ and covariance matrix $R_0$ for the object. Since $i$ is a linear combination of a Gaussian object and a Gaussian noise, it is also Gaussian. Its associated probability density reads:
+$$
+p(\mathbf{i} \mid \alpha ; \theta)=A\left(\operatorname{det} \mathbf{R}_{\mathrm{i}}\right)^{-1 / 2} \exp \left(-\frac{1}{2}\left(\mathbf{i}-\mathbf{i}_{\mathrm{m}}\right)^t \mathbf{R}_{\mathrm{i}}^{-1}\left(\mathbf{i}-\mathbf{i}_{\mathrm{m}}\right)\right)
+$$
+
+where $A$ is a constant, $R_i$ is the image covariance matrix and $\mathrm{i}_m=\mathrm{H} \mathrm{o}_{\mathrm{m}}$. Since we only need to estimate a small number of parameters, there is no need to regularize the solution over $\alpha$. We therefore use a Maximum Likelihood (ML) estimator rather than a Maximum A Posteriori (MAP) estimator. Maximizing $p(\mathrm{i} \mid \alpha ; \theta)$ is equivalent to minimizing the opposite of its logarithm:
+
+$$
+J_{\mathrm{ML}}(\alpha)=J_{\mathrm{jmap}}^{\prime \prime}(\alpha)+\frac{1}{2} \sum_v \ln \left(|\tilde{h}(v)|^2+\frac{S_{\mathrm{n}}}{S_0(v)}\right)-\frac{1}{2} N^2 \ln S_{\mathrm{n}}
+$$
 
 ## Contributions
 
