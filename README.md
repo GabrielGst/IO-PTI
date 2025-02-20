@@ -287,7 +287,7 @@ $$
 where $A$ is a constant, $R_i$ is the image covariance matrix and $\mathrm{i}_m=\mathrm{H} \mathrm{o}_{\mathrm{m}}$. Since we only need to estimate a small number of parameters, there is no need to regularize the solution over $\alpha$. We therefore use a Maximum Likelihood (ML) estimator rather than a Maximum A Posteriori (MAP) estimator. Maximizing $p(\mathrm{i} \mid \alpha ; \theta)$ is equivalent to minimizing the opposite of its logarithm:
 
 $$
-J_{\mathrm{ML}}(\alpha)=J_{\mathrm{jmap}}^{\prime \prime}(\alpha)+\frac{1}{2} \sum_v \ln \left(|\tilde{h}(v)|^2+\frac{S_{\mathrm{n}}}{S_0(v)}\right)-\frac{1}{2} N^2 \ln S_{\mathrm{n}}
+J_{\mathrm{ML}}(\alpha)=J_{\mathrm{jmap}}^{\prime}(\alpha)+\frac{1}{2} \sum_v \ln \left(|\tilde{h}(v)|^2+\frac{S_{\mathrm{n}}}{S_0(v)}\right)-\frac{1}{2} N^2 \ln S_{\mathrm{n}}
 $$
 
 ## Contributions
